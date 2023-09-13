@@ -1,10 +1,10 @@
 all: pmandel
 
-pmandel: mandel.o mandelPlot.o
-	g++  -o pmandel mandelPlot.o mandel.o -lm
+pmandel: mandel.o pmandel.o
+	g++  -o pmandel pmandel.o mandel.o -lm
 
-mandelPlot.o: mandelPlot.cc mandel.h
-	g++ -g -c mandelPlot.cc 
+pmandel.o: pmandel.cc mandel.h
+	g++ -g -c pmandel.cc 
 
 mandel.o: mandel.cc mandel.h
 	g++ -g -c mandel.cc 
