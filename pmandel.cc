@@ -93,14 +93,14 @@ int main(int argc, char *argv[]){
   MandelPointRegion *mandelRegion; //-- Point region -- contains points and methods to generate them
   MandelPoint point;               //-- One point
   int procs;
-  pid_t child_pid, parent_pid, wait_pid;
+  pid_t c_pid, p_pid, w_pid;
   
   
   //
   // -- Process the input arguments
   //
   if(argc != 10) {
-    printf("mandel RealCoord ImagCoord RealSideLength ImagSideLength EscapeIterations HorizontalPixels VerticalPixels ImageFile Procs\n");
+    printf("mandel RealCoord ImagCoord RealSideLength ImagSideLength EscapeIterations HorizontalPixels VerticalPixels ImageFile Nprocs\n");
     exit(1);
   } 
 
@@ -164,38 +164,45 @@ int main(int argc, char *argv[]){
     //
   
   //The for loop and fork are new
-  snprintf(printBuf,PRINTBUFSIZE,"Process %d testing rectangle at %.8f + %.8f \n\twidth %.8f and height %.8f \n\tplot area width %d by height %d pixels.\n",
-	   getpid(),start.real(),start.imag(),hrange,vrange,hpixels,vpixels);
-  write(1,printBuf,strlen(printBuf));
-  //
-  //--- Create a new point region and calculate the point values.  The "value" is
-  //    the number of iterations before the recurrence value exceeds 2. If maxiterations
-  //    is reached without exceeding 2, the point is not in the set.
-  //
-  mandelRegion=new MandelPointRegion(start,hrange,vrange,hpixels,vpixels,maxiterations);
-  mandelRegion->ComputePoints();
+  for(i = 0; i < procs; i++) {
+    if((c_pid = fork()) == 0) {
+      snprintf(printBuf,PRINTBUFSIZE,"Process %d testing rectangle at %.8f + %.8f \n\twidth %.8f and height %.8f \n\tplot area width %d by height %d pixels.\n",
+	       getpid(),start.real(),start.imag(),hrange,vrange,hpixels,vpixels);
+      write(1,printBuf,strlen(printBuf));
+      //
+      //--- Create a new point region and calculate the point values.  The "value" is
+      //    the number of iterations before the recurrence value exceeds 2. If maxiterations
+      //    is reached without exceeding 2, the point is not in the set.
+      //
+      mandelRegion=new MandelPointRegion(start,hrange,vrange,hpixels,vpixels,maxiterations);
+      mandelRegion->ComputePoints();
       
-  //
-  //--- Now create the image file
-  //
-  
+      //
+      //--- Now create the image file
+      //
+      
 #ifndef COLORSCHEME
-  colorscheme=1;
+      colorscheme=3;
 #else
-  colorscheme=COLORSCHEME;
+      colorscheme=COLORSCHEME;
 #endif
-  
-  for (i=0; i < hpixels*vpixels; i++)
-    {
-      point=mandelRegion->getPoint(i);
-      addPoint(colorscheme,point.iterationsCompleted,maxiterations,fp);
+      
+      for (i=0; i < hpixels*vpixels; i++)
+	{
+	  point=mandelRegion->getPoint(i);
+	  addPoint(colorscheme,point.iterationsCompleted,maxiterations,fp);
+	}
+      
+      //
+      //-- Done
+      //
+      snprintf(printBuf,PRINTBUFSIZE,"Process %d done.\n",getpid());
+      write(1,printBuf,strlen(printBuf));
+      exit(0);
     }
-  
-  //
-  //-- Done
-  //
-  snprintf(printBuf,PRINTBUFSIZE,"Process %d done.\n",getpid());
-  write(1,printBuf,strlen(printBuf));
+  }
+  while((w_pid = wait(0)) > 0);
+  return 0;
 }
 
 
