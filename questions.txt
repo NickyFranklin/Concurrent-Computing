@@ -1,0 +1,5 @@
+What color scheme am I supposed to use? The project 1 document states that I should be using ColorScheme 1 but the grading sheet says I should be using ColorScheme 3.
+
+What files should I have? Should I make my own file named pmandel.cc like the project calls for or should I just edit the mandelbrot code I am given and compile it to an executable named pmandel? If I should have my own file, should I just copy and past mandelbrotPlot.cc code into the file?
+
+
