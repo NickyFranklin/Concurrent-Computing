@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <string.h>
 //-----------------------------------------------------------------
 // Computes members of mandelbrot for specified region
 // of the real/imaginary plane. Creates PPM image file
@@ -148,13 +149,31 @@ int main(int argc, char *argv[]){
     printf("%s cannot be opened for write\n",argv[6]);
   }
   (void) fprintf(fp, "P6\n%d %d\n255\n", hpixels, vpixels);
+  //New code to set up future file names
+  char editString[500];
+  for(int i = 0; i < 500; i++) {
+    editString[i] = 0;
+  }
+  strcpy(editString, argv[8]);
+  char* edit;
+  edit = strrchr(editString, '.');
+  edit[0] = '%';
+  edit[1] = 'd';
+  edit[2] = '.';
+  edit[3] = 'p';
+  edit[4] = 'p';
+  edit[5] = 'm';
   //------------------------------------------------------------------
   //The code that was originally written in the mandelbrot Plot code will be
   //denoted by these blocks before and after the code. This counts as one of these blocks
   //------------------------------------------------------------------
   //New code
   procs = atoi(argv[9]);
-  
+  dblcpoint childStart;
+  double childImag;
+  double childStartInc = strtod(argv[2], NULL) / ((double)  procs);
+  int vpixelInc = vpixels / procs;
+  double vrangeInc = vrange / ((double) procs);
   //------------------------------------------------------------------
   //The code that was originally written in the mandelbrot Plot code will be
   //denoted by these blocks before and after the code. This counts as one of these blocks
@@ -169,17 +188,27 @@ int main(int argc, char *argv[]){
       snprintf(printBuf,PRINTBUFSIZE,"Process %d testing rectangle at %.8f + %.8f \n\twidth %.8f and height %.8f \n\tplot area width %d by height %d pixels.\n",
 	       getpid(),start.real(),start.imag(),hrange,vrange,hpixels,vpixels);
       write(1,printBuf,strlen(printBuf));
-      //have an array of pids and divide the total height of the picture.
-      //Have each entry in the array of pids do their own rectangle
-      //Start pixel should be specified in an array in the adult
-
-
+      //have a total number of processes and then use the i values to indicate what they should do
+      //Have each child do their own rectangle
+      //Start pixel should be specified in the adult
+      sprintf(editString, editString, i+1);
+      fp = fopen(editString, "wb");
+      if (fp==NULL){
+	printf("%s cannot be opened for write\n",argv[6]);
+      }
+      (void) fprintf(fp, "P6\n%d %d\n255\n", hpixels, vpixels);
       //
       //--- Create a new point region and calculate the point values.  The "value" is
       //    the number of iterations before the recurrence value exceeds 2. If maxiterations
       //    is reached without exceeding 2, the point is not in the set.
       //
-      mandelRegion=new MandelPointRegion(start,hrange,vrange,hpixels,vpixels,maxiterations);
+      childImag = (strtod(argv[2], NULL) - ((double) (i) * childStartInc));
+      childStart = {
+	strtod(argv[1],NULL) , childImag
+      };
+      vrange = vrangeInc;
+      vpixels = vpixelInc;
+      mandelRegion=new MandelPointRegion(childStart,hrange,vrange,hpixels,vpixels,maxiterations);
       mandelRegion->ComputePoints();
       
       //
@@ -192,9 +221,9 @@ int main(int argc, char *argv[]){
       colorscheme=COLORSCHEME;
 #endif
       
-      for (i=0; i < hpixels*vpixels; i++)
+      for (int j=0; j < hpixels*vpixels; j++)
 	{
-	  point=mandelRegion->getPoint(i);
+	  point=mandelRegion->getPoint(j);
 	  addPoint(colorscheme,point.iterationsCompleted,maxiterations,fp);
 	}
       
