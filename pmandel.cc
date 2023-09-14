@@ -169,6 +169,11 @@ int main(int argc, char *argv[]){
       snprintf(printBuf,PRINTBUFSIZE,"Process %d testing rectangle at %.8f + %.8f \n\twidth %.8f and height %.8f \n\tplot area width %d by height %d pixels.\n",
 	       getpid(),start.real(),start.imag(),hrange,vrange,hpixels,vpixels);
       write(1,printBuf,strlen(printBuf));
+      //have an array of pids and divide the total height of the picture.
+      //Have each entry in the array of pids do their own rectangle
+      //Start pixel should be specified in an array in the adult
+
+
       //
       //--- Create a new point region and calculate the point values.  The "value" is
       //    the number of iterations before the recurrence value exceeds 2. If maxiterations
