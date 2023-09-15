@@ -39,7 +39,37 @@ unsigned char palette[COLORS][3] = {{255,255,255},{255,0,0},{255,128,0},{255,255
 // Associate a color with one point and add point values
 // to the PPM file.  See the project handout for a more complete
 // description.
-//-----------------------------------------------------------------
+//------------------------------------------------------------------
+typedef struct {
+  unsigned char r,g,b;
+} Pixel;
+
+Pixel* readPPM(FILE *fp) {
+  char fileFormat[4];
+  int width, height, colorValue;
+  fscanf(fp, "%s %d %d %d", fileFormat, &width, &height, &colorValue);
+  Pixel *pixelArr = (Pixel *)malloc(width*height*sizeof(Pixel));
+  Pixel pixel;
+  unsigned char c = fgetc(fp);
+  for(int i = 0; i < (width*height); i++) {
+    pixel.r = fgetc(fp);
+    pixel.g = fgetc(fp);
+    pixel.b = fgetc(fp);
+    pixelArr[i] = pixel;
+  }
+  return pixelArr;
+}
+
+void writePPM(FILE* fp2, Pixel* pixelArr) {
+  (void) fprintf(fp2, "P6\n%d %d\n255\n", 1920, 540);
+  Pixel pixel;
+  for(int i = 0; i < 1920 * 540; i++) {
+    pixel = pixelArr[i];
+    fputc(pixel.r, fp2);
+    fputc(pixel.g, fp2);
+    fputc(pixel.b, fp2);
+  }
+}
 
 void addPoint(int scheme, int iterations, int maxiterations, FILE *fp){
 
@@ -195,12 +225,11 @@ int main(int argc, char *argv[]){
       //Have each child do their own rectangle
       //Start pixel should be specified in the adult
       sprintf(editString, editString, i+1);
-      FILE* fp2;
-      fp2 = fopen(editString, "wb");
-      if (fp2==NULL){
+      fp = fopen(editString, "wb");
+      if (fp==NULL){
 	printf("%s cannot be opened for write\n",argv[6]);
       }
-      (void) fprintf(fp2, "P6\n%d %d\n255\n", hpixels, vpixelInc);
+      (void) fprintf(fp, "P6\n%d %d\n255\n", hpixels, vpixelInc);
       //
       //--- Create a new point region and calculate the point values.  The "value" is
       //    the number of iterations before the recurrence value exceeds 2. If maxiterations
@@ -228,10 +257,7 @@ int main(int argc, char *argv[]){
       for (int j=0; j < hpixels*vpixels; j++)
 	{
 	  point=mandelRegion->getPoint(j);
-	  addPoint(colorscheme,point.iterationsCompleted,maxiterations,fp2);
-	  //New idea, build main file as you go, do this by offsetting where information gets written
-	  //per child
-	  addPoint(colorscheme, point.iterationsCompleted, maxiterations, fp);
+	  addPoint(colorscheme,point.iterationsCompleted,maxiterations,fp);
 	}
       
       //
@@ -244,7 +270,6 @@ int main(int argc, char *argv[]){
     }
   }
   while((w_pid = wait(0)) > 0);
-  /*
   char newString[500];
   FILE *fp2;
   for(i = 0; i < procs; i++) {
@@ -254,9 +279,12 @@ int main(int argc, char *argv[]){
     if (fp2==NULL){
       printf("%s cannot be opened for write\n",argv[6]);
     }
-    }
-  */
-  
+    char *data = (char *) malloc(hpixels * vpixelInc);
+    fread(data, sizeof(int), hpixels*vpixelInc, fp2);
+    fwrite(data, 1, hpixels*vpixelInc, fp);
+    fclose(fp2);
+    free(data);
+  }
   return 0;
 }
 
