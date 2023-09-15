@@ -31,8 +31,9 @@ Pixel* readPPM(FILE *fp) {
   return pixelArr;
 }
 
-void writePPM() {
-
+void writePPM(FILE* fp2, Pixel* pixelArr) {
+  (void) fprintf(fp, "P6\n%d %d\n255\n", 1920, 540);
+  
 }
 
 int main(){
@@ -44,6 +45,9 @@ int main(){
     pixel = pixelArr[i];
     printf("%d %d %d\n", pixel.r, pixel.g, pixel.b);
   }
+  FILE* fp2 = fopen("pic.ppm", "wb");
+  writePPM(fp2, pixelArr);
+  
   free(pixelArr);
   return(0);
 }
