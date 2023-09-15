@@ -62,8 +62,10 @@ Pixel* readPPM(FILE *fp) {
   return pixelArr;
 }
 
-void writePPM(FILE* fp2, Pixel* pixelArr, int i, int width, int height) {
-  //(void) fprintf(fp2, "P6\n%d %d\n255\n", hpixels, vpixels);
+void writePPM(FILE* fp2, Pixel* pixelArr, int i, int width, int height, int vpixels) {
+  if(i==0) {
+    (void) fprintf(fp2, "P6\n%d %d\n255\n", width, vpixels);
+  }
   Pixel pixel;
   for(int i = 0; i < width * height; i++) {
     pixel = pixelArr[i];
@@ -274,12 +276,13 @@ int main(int argc, char *argv[]){
   while((w_pid = wait(0)) > 0);
   char newString[500];
   FILE *fp2;
+  FILE *fp3;
   Pixel *pixelArr;
-  fp=fopen(argv[8], "wb"); /* b - binary mode */ 
-  if (fp==NULL){
-    printf("%s cannot be opened for write\n",argv[6]);
-  }
-  (void) fprintf(fp, "P6\n%d %d\n255\n", hpixels, vpixels);
+  fp3=fopen(argv[8], "wb"); /* b - binary mode */ 
+  //if (fp==NULL){
+  //printf("%s cannot be opened for write\n",argv[6]);
+  //}
+  //fprintf(fp, "P6\n%d %d\n255\n", hpixels, vpixels);
   for(i = 0; i < procs; i++) {
     strcpy(newString, editString);
     sprintf(newString, newString, i+1);
@@ -288,13 +291,13 @@ int main(int argc, char *argv[]){
       printf("%s cannot be opened for write\n",argv[6]);
     }
     pixelArr = readPPM(fp2);
-    writePPM(fp, pixelArr, i, hpixels, vpixelInc);
+    writePPM(fp3, pixelArr, i, hpixels, vpixelInc, vpixels);
   }
   free(pixelArr);
   return 0;
 }
 
-
+//idea, read all files then print to final file
 
 //------------------------------------------------------------------
 //The code that was originally written in the mandelbrot Plot code will be
