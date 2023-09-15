@@ -51,19 +51,21 @@ Pixel* readPPM(FILE *fp) {
   Pixel *pixelArr = (Pixel *)malloc(width*height*sizeof(Pixel));
   Pixel pixel;
   unsigned char c = fgetc(fp);
+  printf("%d\n", c);
   for(int i = 0; i < (width*height); i++) {
     pixel.r = fgetc(fp);
     pixel.g = fgetc(fp);
     pixel.b = fgetc(fp);
+    //printf("%d %d %d \n", pixel.r, pixel.g, pixel.b);
     pixelArr[i] = pixel;
   }
   return pixelArr;
 }
 
-void writePPM(FILE* fp2, Pixel* pixelArr) {
-  (void) fprintf(fp2, "P6\n%d %d\n255\n", 1920, 540);
+void writePPM(FILE* fp2, Pixel* pixelArr, int i, int width, int height) {
+  //(void) fprintf(fp2, "P6\n%d %d\n255\n", hpixels, vpixels);
   Pixel pixel;
-  for(int i = 0; i < 1920 * 540; i++) {
+  for(int i = 0; i < width * height; i++) {
     pixel = pixelArr[i];
     fputc(pixel.r, fp2);
     fputc(pixel.g, fp2);
@@ -272,6 +274,12 @@ int main(int argc, char *argv[]){
   while((w_pid = wait(0)) > 0);
   char newString[500];
   FILE *fp2;
+  Pixel *pixelArr;
+  fp=fopen(argv[8], "wb"); /* b - binary mode */ 
+  if (fp==NULL){
+    printf("%s cannot be opened for write\n",argv[6]);
+  }
+  (void) fprintf(fp, "P6\n%d %d\n255\n", hpixels, vpixels);
   for(i = 0; i < procs; i++) {
     strcpy(newString, editString);
     sprintf(newString, newString, i+1);
@@ -279,12 +287,10 @@ int main(int argc, char *argv[]){
     if (fp2==NULL){
       printf("%s cannot be opened for write\n",argv[6]);
     }
-    char *data = (char *) malloc(hpixels * vpixelInc);
-    fread(data, sizeof(int), hpixels*vpixelInc, fp2);
-    fwrite(data, 1, hpixels*vpixelInc, fp);
-    fclose(fp2);
-    free(data);
+    pixelArr = readPPM(fp2);
+    writePPM(fp, pixelArr, i, hpixels, vpixelInc);
   }
+  free(pixelArr);
   return 0;
 }
 

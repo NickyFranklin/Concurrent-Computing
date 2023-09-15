@@ -31,10 +31,12 @@ Pixel* readPPM(FILE *fp) {
   return pixelArr;
 }
 
-void writePPM(FILE* fp2, Pixel* pixelArr) {
-  (void) fprintf(fp2, "P6\n%d %d\n255\n", 1920, 540);
+void writePPM(FILE* fp2, Pixel* pixelArr, int i, int width, int height) {
+  if(i == 0) {
+    (void) fprintf(fp2, "P6\n%d %d\n255\n", 500, 125);
+  }
   Pixel pixel;
-  for(int i = 0; i < 1920 * 540; i++) {
+  for(int i = 0; i < width * height; i++) {
     pixel = pixelArr[i];
     fputc(pixel.r, fp2);
     fputc(pixel.g, fp2);
@@ -43,7 +45,7 @@ void writePPM(FILE* fp2, Pixel* pixelArr) {
 }
 
 int main(){
-  FILE* fp = fopen("pic2.ppm", "rb");
+  FILE* fp = fopen("pic1.ppm", "rb");
   Pixel *pixelArr;
   pixelArr = readPPM(fp);
   Pixel pixel;
@@ -52,8 +54,7 @@ int main(){
     printf("%d %d %d\n", pixel.r, pixel.g, pixel.b);
   }
   FILE* fp2 = fopen("pic.ppm", "wb");
-  writePPM(fp2, pixelArr);
-  
+  writePPM(fp2, pixelArr, 0, 500, 125);
   free(pixelArr);
   return(0);
 }
