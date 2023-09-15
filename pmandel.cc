@@ -39,7 +39,8 @@ unsigned char palette[COLORS][3] = {{255,255,255},{255,0,0},{255,128,0},{255,255
 // Associate a color with one point and add point values
 // to the PPM file.  See the project handout for a more complete
 // description.
-//------------------------------------------------------------------
+//-----------------------------------------------------------------
+
 void addPoint(int scheme, int iterations, int maxiterations, FILE *fp){
 
   unsigned char color[3];
@@ -144,11 +145,13 @@ int main(int argc, char *argv[]){
     exit(1);
   }
 
-  fp=fopen(argv[8], "wb"); /* b - binary mode */
+  
+  fp=fopen(argv[8], "wb"); /* b - binary mode */ 
   if (fp==NULL){
     printf("%s cannot be opened for write\n",argv[6]);
   }
   (void) fprintf(fp, "P6\n%d %d\n255\n", hpixels, vpixels);
+  
   //New code to set up future file names
   char editString[500];
   for(int i = 0; i < 500; i++) {
@@ -192,11 +195,12 @@ int main(int argc, char *argv[]){
       //Have each child do their own rectangle
       //Start pixel should be specified in the adult
       sprintf(editString, editString, i+1);
-      fp = fopen(editString, "wb");
-      if (fp==NULL){
+      FILE* fp2;
+      fp2 = fopen(editString, "wb");
+      if (fp2==NULL){
 	printf("%s cannot be opened for write\n",argv[6]);
       }
-      (void) fprintf(fp, "P6\n%d %d\n255\n", hpixels, vpixels);
+      (void) fprintf(fp2, "P6\n%d %d\n255\n", hpixels, vpixelInc);
       //
       //--- Create a new point region and calculate the point values.  The "value" is
       //    the number of iterations before the recurrence value exceeds 2. If maxiterations
@@ -224,7 +228,10 @@ int main(int argc, char *argv[]){
       for (int j=0; j < hpixels*vpixels; j++)
 	{
 	  point=mandelRegion->getPoint(j);
-	  addPoint(colorscheme,point.iterationsCompleted,maxiterations,fp);
+	  addPoint(colorscheme,point.iterationsCompleted,maxiterations,fp2);
+	  //New idea, build main file as you go, do this by offsetting where information gets written
+	  //per child
+	  addPoint(colorscheme, point.iterationsCompleted, maxiterations, fp);
 	}
       
       //
@@ -232,10 +239,24 @@ int main(int argc, char *argv[]){
       //
       snprintf(printBuf,PRINTBUFSIZE,"Process %d done.\n",getpid());
       write(1,printBuf,strlen(printBuf));
+      fclose(fp);
       exit(0);
     }
   }
   while((w_pid = wait(0)) > 0);
+  /*
+  char newString[500];
+  FILE *fp2;
+  for(i = 0; i < procs; i++) {
+    strcpy(newString, editString);
+    sprintf(newString, newString, i+1);
+    fp2 = fopen(newString, "rb");
+    if (fp2==NULL){
+      printf("%s cannot be opened for write\n",argv[6]);
+    }
+    }
+  */
+  
   return 0;
 }
 
@@ -245,3 +266,4 @@ int main(int argc, char *argv[]){
 //The code that was originally written in the mandelbrot Plot code will be
 //denoted by these blocks before and after the code. This counts as one of these blocks
 //------------------------------------------------------------------
+

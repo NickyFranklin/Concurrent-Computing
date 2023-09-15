@@ -5,39 +5,46 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <string.h>
+#include<stdio.h>
+#include<stdlib.h>
 using namespace std;
 
-int main(int argc, char* argv[]) {
-  pid_t c_pid, w_pid;
-  FILE *fp;
-  fp = fopen("file.txt", "wb");
-  char editString[500];
-  strcpy(editString, "file.txt");
-  int length = strlen(editString);
-  char* edit;
-  edit = strrchr(editString, '.');
-  edit[0] = '%';
-  edit[1] = 'd';
-  edit[2] = '.';
-  edit[3] = 'p';
-  edit[4] = 'p';
-  edit[5] = 'm';
-  cout << editString << "\n";
-  int start = 0;
-  int total = 1000;
-  int procs = 5;
-  int increment = 1000 / 5;
-  for(int i = 0; i < 5; i++) {
-    if((c_pid = fork()) == 0) {
-      sprintf(editString, editString, i+6);
-      fp = fopen(editString, "wb");
-      cout << "printed from child " << getpid() << "\n";
-      fclose(fp);
-      exit(0);
-    }
+typedef struct {
+  unsigned char r,g,b;
+} Pixel;
+
+Pixel* readPPM(FILE *fp) {
+  char fileFormat[4];
+  int width, height, colorValue;
+  fscanf(fp, "%s %d %d %d", fileFormat, &width, &height, &colorValue);
+  printf("%s %d %d %d\n", fileFormat, width, height, colorValue);
+  Pixel *pixelArr = (Pixel *)malloc(width*height*sizeof(Pixel));
+  Pixel pixel;
+  unsigned char c = fgetc(fp);
+  for(int i = 0; i < (width*height); i++) {
+    pixel.r = fgetc(fp);
+    pixel.g = fgetc(fp);
+    pixel.b = fgetc(fp);
+    //printf("%d %d %d %d\n", c, pixel.r, pixel.g, pixel.b);
+    pixelArr[i] = pixel;
   }
-  while((w_pid = wait(0)) > 0);
-  cout << "printed from parent " << getpid() << "\n";
-  fclose(fp);
-  return 0;
+  return pixelArr;
 }
+
+void writePPM() {
+
+}
+
+int main(){
+  FILE* fp = fopen("pic1.ppm", "rb");
+  Pixel *pixelArr;
+  pixelArr = readPPM(fp);
+  Pixel pixel;
+  for(int i = 0; i < 2; i++) {
+    pixel = pixelArr[i];
+    printf("%d %d %d\n", pixel.r, pixel.g, pixel.b);
+  }
+  free(pixelArr);
+  return(0);
+}
+
