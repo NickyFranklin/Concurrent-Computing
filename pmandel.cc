@@ -47,16 +47,15 @@ typedef struct {
 Pixel* readPPM(FILE *fp) {
   char fileFormat[4];
   int width, height, colorValue;
-  fscanf(fp, "%s %d %d %d", fileFormat, &width, &height, &colorValue);
+  fscanf(fp, "%s\n%d %d\n%d", fileFormat, &width, &height, &colorValue);
   Pixel *pixelArr = (Pixel *)malloc(width*height*sizeof(Pixel));
   Pixel pixel;
   unsigned char c = fgetc(fp);
-  printf("%d\n", c);
   for(int i = 0; i < (width*height); i++) {
     pixel.r = fgetc(fp);
     pixel.g = fgetc(fp);
     pixel.b = fgetc(fp);
-    //printf("%d %d %d \n", pixel.r, pixel.g, pixel.b);
+    //printf("%d %d %d \n 255", pixel.r, pixel.g, pixel.b);
     pixelArr[i] = pixel;
   }
   return pixelArr;
@@ -123,13 +122,14 @@ int main(int argc, char *argv[]){
   double vincrement;     //-- Length between pixels in complex plane
   int maxiterations;     //-- Number of iterations use to identify points in the set
   int i;                 //-- Loop index for recurrence relation
-  FILE *fp;              //-- Descriptor for file to hold image
+  //FILE *fp;              //-- Descriptor for file to hold image
   int colorscheme;       //-- Color scheme for the plot
   char printBuf[PRINTBUFSIZE];     //-- Output buffer  
   MandelPointRegion *mandelRegion; //-- Point region -- contains points and methods to generate them
   MandelPoint point;               //-- One point
   int procs;
   pid_t c_pid, p_pid, w_pid;
+  int status;
   
   
   //
@@ -179,13 +179,13 @@ int main(int argc, char *argv[]){
     exit(1);
   }
 
-  
-  fp=fopen(argv[8], "wb"); /* b - binary mode */ 
+  /*
+  fp=fopen(argv[8], "wb");  b - binary mode  
   if (fp==NULL){
     printf("%s cannot be opened for write\n",argv[6]);
   }
   (void) fprintf(fp, "P6\n%d %d\n255\n", hpixels, vpixels);
-  
+  */
   //New code to set up future file names
   char editString[500];
   for(int i = 0; i < 500; i++) {
@@ -208,7 +208,10 @@ int main(int argc, char *argv[]){
   procs = atoi(argv[9]);
   dblcpoint childStart;
   double childImag;
-  double childStartInc = strtod(argv[2], NULL) / ((double)  procs);
+  double imaginary = start.imag();
+  double real = start.real();
+  double childStartInc = (imaginary / ((double) procs));
+  //double childStartInc = start.imag() / ((double)  procs);
   int vpixelInc = vpixels / procs;
   double vrangeInc = vrange / ((double) procs);
   //------------------------------------------------------------------
@@ -223,12 +226,13 @@ int main(int argc, char *argv[]){
   for(i = 0; i < procs; i++) {
     if((c_pid = fork()) == 0) {
       snprintf(printBuf,PRINTBUFSIZE,"Process %d testing rectangle at %.8f + %.8f \n\twidth %.8f and height %.8f \n\tplot area width %d by height %d pixels.\n",
-	       getpid(),start.real(),start.imag(),hrange,vrange,hpixels,vpixels);
+	       getpid(),start.real(),start.imag()-((((double) i) * vrangeInc)),hrange,vrangeInc,hpixels,vpixelInc);
       write(1,printBuf,strlen(printBuf));
       //have a total number of processes and then use the i values to indicate what they should do
       //Have each child do their own rectangle
       //Start pixel should be specified in the adult
       sprintf(editString, editString, i+1);
+      FILE* fp;
       fp = fopen(editString, "wb");
       if (fp==NULL){
 	printf("%s cannot be opened for write\n",argv[6]);
@@ -239,13 +243,17 @@ int main(int argc, char *argv[]){
       //    the number of iterations before the recurrence value exceeds 2. If maxiterations
       //    is reached without exceeding 2, the point is not in the set.
       //
-      childImag = (strtod(argv[2], NULL) - ((double) (i) * childStartInc));
-      childStart = {
-	strtod(argv[1],NULL) , childImag
+      //childImag = (strtod(argv[2], NULL) - ((double) (i) * childStartInc));
+      //childStart = {
+      //strtod(argv[1],NULL) , childImag
+      //};
+      imaginary = (imaginary - (((double) i) * vrangeInc));
+      start = {
+	real, imaginary
       };
       vrange = vrangeInc;
       vpixels = vpixelInc;
-      mandelRegion=new MandelPointRegion(childStart,hrange,vrange,hpixels,vpixels,maxiterations);
+      mandelRegion=new MandelPointRegion(start,hrange,vrange,hpixels,vpixels,maxiterations);
       mandelRegion->ComputePoints();
       
       //
@@ -273,7 +281,7 @@ int main(int argc, char *argv[]){
       exit(0);
     }
   }
-  while((w_pid = wait(0)) > 0);
+  while((w_pid = wait(&status)) > 0);
   char newString[500];
   FILE *fp2;
   FILE *fp3;
