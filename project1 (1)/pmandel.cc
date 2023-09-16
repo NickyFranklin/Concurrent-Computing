@@ -265,7 +265,9 @@ int main(int argc, char *argv[]){
       //have a total number of processes and then use the i values to indicate what they should do
       //Have each child do their own rectangle
       //Start pixel should be specified in the adult
-      sprintf(editString, editString, i+1);
+      char decoyString[500];
+      strcpy(decoyString, editString);
+      sprintf(editString, decoyString, i+1);
       FILE* fp;
       fp = fopen(editString, "wb");
       if (fp==NULL){
@@ -319,6 +321,7 @@ int main(int argc, char *argv[]){
   //new code
   while((w_pid = wait(&status)) > 0);
   char newString[500];
+  char decoyString[500];
   FILE *fp2;
   FILE *fp3;
   Pixel *pixelArr;
@@ -329,7 +332,8 @@ int main(int argc, char *argv[]){
   //fprintf(fp, "P6\n%d %d\n255\n", hpixels, vpixels);
   for(i = 0; i < procs; i++) {
     strcpy(newString, editString);
-    sprintf(newString, newString, i+1);
+    strcpy(decoyString, newString);
+    sprintf(newString, decoyString, i+1);
     fp2 = fopen(newString, "rb");
     if (fp2==NULL){
       printf("%s cannot be opened for write\n",argv[6]);

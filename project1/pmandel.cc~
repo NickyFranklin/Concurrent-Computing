@@ -265,7 +265,9 @@ int main(int argc, char *argv[]){
       //have a total number of processes and then use the i values to indicate what they should do
       //Have each child do their own rectangle
       //Start pixel should be specified in the adult
-      sprintf(editString, editString, i+1);
+      char decoyString[500];
+      strcpy(decoyString, editString);
+      sprintf(editString, decoyString, i+1);
       FILE* fp;
       fp = fopen(editString, "wb");
       if (fp==NULL){
