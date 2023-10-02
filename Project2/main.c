@@ -4,6 +4,20 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
+/*---------------------------------------------------------------------------*/
+/* NAME: Nicky Franklin                                   User ID:nafrankl   */
+/* DUE DATE: 10/4/2023                                                       */
+/* PROGRAM ASSIGNMENT 2                                                      */
+/* FILE NAME: main.c                                                         */
+/* PROGRAM PURPOSE: To take in unsorted arrays and sort them concurrently    */
+/*---------------------------------------------------------------------------*/
+
+typedef struct {
+  int a;
+  double b;
+  char x;
+} Data;
+
 void fillArray(int* size, int **arr) {
   scanf("%d", size);
   *arr = (int*) calloc(*size, sizeof(int));
@@ -38,5 +52,13 @@ int main() {
   printArray(k, a);
   printArray(m, x);
   printArray(n, y);
+  
+  Data data;
+  int ShmID;
+  key_t Key;
+
+  Key = ftok("./", 'h');
+  ShmID = shmget(Key, (k+m+n), IPC_CREAT | 0666);
+  
   
 }
