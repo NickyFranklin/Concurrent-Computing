@@ -66,6 +66,10 @@ int main() {
   int ShmIDy;
   key_t keyy;
   int *yPtr;
+
+  int ShmIDm;
+  key_t keym;
+  int *mPtr;
   
   keyQsort = ftok("main.c", 'q');
   printf("*** MAIN: qsort shared memory key = %d\n", keyQsort);
@@ -109,6 +113,20 @@ int main() {
   printf("*** MAIN: merge y[] shared memory attached and ready to use\n\n");
 
   
+  keym = ftok("main.c", 'm');
+  printf("*** MAIN: merge output shared memory key = %d\n", keym);
+  
+  ShmIDm = shmget(keym, sizeof(int) * (sizeY+sizeX), IPC_CREAT | 0666);
+  if(ShmIDm < 0) {
+    printf("Uh oh, the shared memory segment was not created\n");
+    return 1;
+  }
+  printf("*** MAIN: merge output shared memory created\n");
+
+  mPtr = (int*) shmat(ShmIDm, NULL, 0);
+  printf("*** MAIN: merge output shared memory attached and ready to use\n\n");
+  
+  
   //fillArray(qSortPtr);
   //fillArray(xPtr);
   //fillArray(yPtr);
@@ -130,7 +148,7 @@ int main() {
 
   printf("*** MAIN: about to spawn the process for qsort\n");
   printf("*** MAIN: about to spawn the process for merge\n");
-
+  
   pid_t wpid;
   pid_t cpid = fork();
   if(cpid < 0) {
@@ -164,20 +182,35 @@ int main() {
   }
   
   if(cpid == 0) {
-    char* argv[4];
-    for(int i = 0; i < 4; i++) {
+    char* argv[7];
+    for(int i = 0; i < 7; i++) {
       argv[i] = (char*) malloc(100);
     }
     argv[0] = "./merge";
     sprintf(argv[1], "%d", ShmIDx);
     sprintf(argv[2], "%d", ShmIDy);
-    argv[3] = NULL;
+    sprintf(argv[3], "%d", sizeX);
+    sprintf(argv[4], "%d", sizeY);
+    sprintf(argv[5], "%d", ShmIDm);
+    argv[6] = NULL;
     execvp(argv[0], argv);
     printf("whoopsies\n");
   }
 
   int status = 0;
   while((wpid = wait(&status)) > 0);
+
+  printf("*** MAIN: sorted array by qsort:\n   ");
+  for(int i = 0; i < sizeQ; i++) {
+    printf("%d ", qSortPtr[i]);
+  }
+  printf("\n");
+
+  printf("*** MAIN: merged array:\n   ");
+  for(int i = 0; i < sizeX + sizeY; i++) {
+    printf("%d ", mPtr[i]);
+  }
+  printf("\n");
   
   shmdt(qSortPtr);
   printf("*** MAIN: qsort shared memory successfully detached\n");
@@ -194,6 +227,13 @@ int main() {
   shmctl(ShmIDy, IPC_RMID, NULL);
   printf("*** MAIN: merge y[] shared memory successfully removed\n\n");
 
+  shmdt(mPtr);
+  printf("*** MAIN: merge output shared memory successfully detached\n");
+  shmctl(ShmIDm, IPC_RMID, NULL);
+  printf("*** MAIN: merge output shared memory successfully removed\n\n");
+
+
+  
   free(a);
   free(x);
   free(y);
