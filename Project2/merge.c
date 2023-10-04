@@ -7,31 +7,31 @@
 #include <sys/wait.h>
 #include <string.h>
 
-int binarySearch(int arr[], int l, int r, int x, int i, int isX) {
+int binarySearch(int arr[], int l, int r, int x, int i, int isX, char *buff) {
   while( l <= r) {
     int k = l + (r-l) / 2;
-
+    pid_t cpid = getpid();
     if(arr[k] <= x && arr[k+1] >= x) {
       if(isX) {
-	sprintf("      $$$ M-PROC(%d): x[%d] = %d is found between y[%d] = %d and y[%d] = %d\n",
-		cpid, i, x, k, y[k+1]);
+	sprintf(buff, "      $$$ M-PROC(%d): x[%d] = %d is found between y[%d] = %d and y[%d] = %d\n",
+		(int) cpid, i, x, k, arr[k], k+1, arr[k+1]);
 	write(1, buff, strlen(buff));
-	sprintf("      $$$ M-PROC(%d): x[%d] = %d is found between y[%d] = %d and y[%d] = %d\n",
-	      cpid, i, x, k, y[k+1]);
       }
 
       else {
-
+	sprintf(buff, "      $$$ M-PROC(%d): x[%d] = %d is found between y[%d] = %d and y[%d] = %d\n",
+		(int) cpid, i, x, k, arr[k], k+1, arr[k+1]);
+	write(1, buff, strlen(buff));
       }
       return k;
     }
     
     else if(arr[k] > x) {
-      return binarySearch(arr, l, k -1, x);
+      return binarySearch(arr, l, k -1, x, i, isX, buff);
     }
 
     
-    return binarySearch(arr, k+1, r, x);
+    return binarySearch(arr, k+1, r, x, i, isX, buff);
     
      
   }
@@ -54,13 +54,16 @@ int main(int argc, char** argv) {
   char buff[1000];
   int sizeX = atoi(argv[3]);
   int sizeY = atoi(argv[4]);
-  int length = strlen(buff);
+  //int length = strlen(buff);
   
   wpid = getpid();
   int originalIndex;
   int modifiedIndex;
   int finalIndex;
-  int number;
+  int number = 0;
+  if(number) {
+
+  }
   for(int i = 0; i < (sizeX+sizeY); i++) {
     cpid = fork();
     if(cpid == 0) {
@@ -69,12 +72,11 @@ int main(int argc, char** argv) {
 	originalIndex = i;
 	modifiedIndex = i;
 	int number = x[i];
-	sprintf(buff, "      $$$ M-PROC(%d): handling x[%d] = %d\n", cpid, originalIndex, number);
+	sprintf(buff, "      $$$ M-PROC(%d): handling x[%d] = %d\n", (int) cpid, originalIndex, number);
 	write(1, buff, strlen(buff));
 	if(number < y[0]) {
 	  finalIndex = modifiedIndex;
-	  sprintf("      $$$ M-PROC(%d): x[%d] = %d is found to be smaller than y[0] = %d\n",
-		  cpid, originalIndex, number, y[0]);
+	  sprintf(buff, "      $$$ M-PROC(%d): x[%d] = %d is found to be smaller than y[0] = %d\n", (int) cpid, originalIndex, number, y[0]);
 	  write(1, buff, strlen(buff));
 	  m[i] = number;
 	  exit(1);
@@ -82,20 +84,23 @@ int main(int argc, char** argv) {
 
 	else if(number > y[sizeY-1]) {
 	  finalIndex = sizeY + originalIndex;
-	  sprintf("      $$$ M-PROC(%d): x[%d] = %d is found to be larger than y[%d] = %d\n",
-		  cpid, originalIndex, number, sizeY-1, y[sizeY-1]);
+	  sprintf(buff, "      $$$ M-PROC(%d): x[%d] = %d is found to be larger than y[%d] = %d\n",
+		  (int) cpid, originalIndex, number, sizeY-1, y[sizeY-1]);
 	  write(1, buff, strlen(buff));
 	  m[finalIndex] = number;
 	  exit(1);
 	}
 	
 	else {
-	  int k = binarySearch(y, 0, sizeY-1, number);
+	  int k = binarySearch(y, 0, sizeY-1, number, i, 1, buff);
 	  if(k == -1) {
 	    exit(1);
 	  }
 	  
 	  else {
+	    sprintf(buff, "      $$$ M-PROC(%d): about to write x[%d] = %d into position %d of the output array\n",
+		    (int) cpid, i, number, k+1+i);
+	    write(1, buff, strlen(buff));
 	    m[k+i+1] = number;
 	    exit(1);
 	  }
@@ -123,13 +128,15 @@ int main(int argc, char** argv) {
 	}
 	
 	else {
-	  printf("Number: %d\n index: %d\n", number, i);
-	  int k = binarySearch(x, 0, sizeX-1, number);
+	  int k = binarySearch(x, 0, sizeX-1, number, originalIndex, 0, buff);
 	  if(k == -1) {
 	    exit(1);
 	  }
 	  
 	  else {
+	    sprintf(buff, "      $$$ M-PROC(%d): about to write y[%d] = %d into position %d of the output array\n",
+		    (int)  cpid, i, number, k+1+originalIndex);
+	    write(1, buff, strlen(buff));
 	    m[k+originalIndex+1] = number;
 	    exit(1);
 	  }
