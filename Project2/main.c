@@ -210,7 +210,7 @@ int main() {
   for(int i = 0; i < sizeX + sizeY; i++) {
     printf("%d ", mPtr[i]);
   }
-  printf("\n");
+  printf("\n\n");
   
   shmdt(qSortPtr);
   printf("*** MAIN: qsort shared memory successfully detached\n");

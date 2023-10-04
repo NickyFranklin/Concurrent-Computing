@@ -7,11 +7,22 @@
 #include <sys/wait.h>
 #include <string.h>
 
-int binarySearch(int arr[], int l, int r, int x) {
+int binarySearch(int arr[], int l, int r, int x, int i, int isX) {
   while( l <= r) {
     int k = l + (r-l) / 2;
 
     if(arr[k] <= x && arr[k+1] >= x) {
+      if(isX) {
+	sprintf("      $$$ M-PROC(%d): x[%d] = %d is found between y[%d] = %d and y[%d] = %d\n",
+		cpid, i, x, k, y[k+1]);
+	write(1, buff, strlen(buff));
+	sprintf("      $$$ M-PROC(%d): x[%d] = %d is found between y[%d] = %d and y[%d] = %d\n",
+	      cpid, i, x, k, y[k+1]);
+      }
+
+      else {
+
+      }
       return k;
     }
     
@@ -53,33 +64,39 @@ int main(int argc, char** argv) {
   for(int i = 0; i < (sizeX+sizeY); i++) {
     cpid = fork();
     if(cpid == 0) {
+      cpid = getpid();
       if(i < sizeX) {
 	originalIndex = i;
 	modifiedIndex = i;
 	int number = x[i];
+	sprintf(buff, "      $$$ M-PROC(%d): handling x[%d] = %d\n", cpid, originalIndex, number);
+	write(1, buff, strlen(buff));
 	if(number < y[0]) {
 	  finalIndex = modifiedIndex;
-	  printf("Number: %d\n index: %d\n", number, i);
+	  sprintf("      $$$ M-PROC(%d): x[%d] = %d is found to be smaller than y[0] = %d\n",
+		  cpid, originalIndex, number, y[0]);
+	  write(1, buff, strlen(buff));
 	  m[i] = number;
 	  exit(1);
 	}
 
 	else if(number > y[sizeY-1]) {
-	  printf("Number: %d\n index: %d\n", number, i);
 	  finalIndex = sizeY + originalIndex;
+	  sprintf("      $$$ M-PROC(%d): x[%d] = %d is found to be larger than y[%d] = %d\n",
+		  cpid, originalIndex, number, sizeY-1, y[sizeY-1]);
+	  write(1, buff, strlen(buff));
 	  m[finalIndex] = number;
 	  exit(1);
 	}
 	
 	else {
-	  printf("Number: %d\n index: %d\n", number, i);
 	  int k = binarySearch(y, 0, sizeY-1, number);
 	  if(k == -1) {
 	    exit(1);
 	  }
 	  
 	  else {
-	    m[k+i] = number;
+	    m[k+i+1] = number;
 	    exit(1);
 	  }
 	}
@@ -88,27 +105,39 @@ int main(int argc, char** argv) {
       }
      
     
-      /*
+      
       else {
 	originalIndex = i - sizeX;
 	modifiedIndex = i;
 	int number = y[originalIndex];
 	if(number < x[0]) {
-	  finalIndex = modifiedIndex;
-	  m[0] = number;
+	  m[modifiedIndex] = number;
+	  exit(1);
 	}
+
 	
 	else if(number > x[sizeX-1]) {
-	  finalIndex = sizeY + originalIndex;
+	  finalIndex = sizeX + originalIndex;
 	  m[finalIndex] = number;
+	  exit(1);
 	}
 	
 	else {
+	  printf("Number: %d\n index: %d\n", number, i);
 	  int k = binarySearch(x, 0, sizeX-1, number);
-	  m[originalIndex+k] = number;
+	  if(k == -1) {
+	    exit(1);
+	  }
+	  
+	  else {
+	    m[k+originalIndex+1] = number;
+	    exit(1);
+	  }
 	}
+	
+	
       }
-      */
+      
       exit(1);
     }
   }
