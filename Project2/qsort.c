@@ -6,13 +6,39 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/wait.h>
+/*---------------------------------------------------------------------------*/
+/* NAME: Nicky Franklin                                   User ID:nafrankl   */
+/* DUE DATE: 10/4/2023                                                       */
+/* PROGRAM ASSIGNMENT 2                                                      */
+/* FILE NAME: qsort.c                                                        */
+/* PROGRAM PURPOSE: To sort an array concurrently using qsort                */
+/*---------------------------------------------------------------------------*/
 
+/* ----------------------------------------------------------- */
+/* FUNCTION swap                                               */
+/* Purpose: swaps two elements in an array                     */
+/* PARAMETER USAGE :                                           */
+/* int* a, int* b: The elements in the array to be switched    */
+/* FUNCTION CALLED :                                           */
+/* n/a                                                         */
+/* ----------------------------------------------------------- */
 void swap(int* a, int* b) {
   int s = *a;
   *a = *b;
   *b = s;
 }
 
+/* ----------------------------------------------------------- */
+/* FUNCTION partition                                          */
+/* Purpose: Sort the pivot of the array so that it may be      */
+/* sorted quickly                                              */
+/* PARAMETER USAGE :                                           */
+/* int arr[]: The array that has the values we are partitioning*/
+/* int low: the low index of the array                         */
+/* int high: the high index of the array                       */
+/* FUNCTION CALLED :                                           */
+/* swap                                                        */
+/* ----------------------------------------------------------- */
 int partition(int arr[], int low, int high) {
   char buff[1000];
   int pivot = arr[high];
@@ -20,7 +46,7 @@ int partition(int arr[], int low, int high) {
   sprintf(buff, "   ### Q-PROC(%d): pivot element is a[%d] = %d\n", cpid, high, arr[high]); 
   write(1, buff, strlen(buff));
   int lowIndex = low - 1;
-
+  //determines points that needs to be swapped
   for(int i = low; i <= high; i++) {
     if(arr[i] < pivot) {
       lowIndex++;
@@ -31,11 +57,21 @@ int partition(int arr[], int low, int high) {
   return lowIndex+1;
 }
 
+/* ----------------------------------------------------------- */
+/* FUNCTION main                                               */
+/* Purpose: sort an array concurrently using qsort             */
+/* PARAMETER USAGE :                                           */
+/* int argc: # arguments for program                           */           
+/* char** argv: arguments for program                          */
+/* FUNCTION CALLED :                                           */
+/* partition                                                   */
+/* ----------------------------------------------------------- */
 int main(int argc, char** argv) {
   if(argc < 3) {
     printf("it messed up \n");
     exit(1);
   }
+  //Initialize the variables
   int *arr;
   pid_t cpid;
   arr = shmat(atoi(argv[3]), NULL, 0);
@@ -45,8 +81,8 @@ int main(int argc, char** argv) {
 	  atoi(argv[1]), atoi(argv[2]));
   int length = strlen(buff);
   int size = (atoi(argv[4]));
-  //printf("pid %d size:%d\n", cpid, size);
   int j = atoi(argv[1]);
+  //Print the array numbers
   for(int i = length; i < 1000 && j < size+atoi(argv[1]) ; i+=0) {
     sprintf(buff+i, "%d ", arr[j]);
     i = strlen(buff);
@@ -56,15 +92,11 @@ int main(int argc, char** argv) {
   write(1, buff, strlen(buff));
   int low = atoi(argv[1]);
   int high = atoi(argv[2]);
-  //printf("low: %d \n high: %d \n", low, high);
+  //if the values are valid, partition the arrray
   if(low < high) {
     int part = partition(arr, atoi(argv[1]), atoi(argv[2]));
     int status = 0;
     pid_t wpid;
-    //int low = atoi(argv[1]);
-    //int high = atoi(argv[2]);
-    //printf("%d %d\n", low, part-1);
-    //printf("%d %d\n", part+1, high);
     
     if(atoi(argv[1]) <= part-1) {
       cpid = fork();
@@ -101,8 +133,10 @@ int main(int argc, char** argv) {
 	printf("\nWhoops\n");
       }
     }
+    //Wait for children
     while((wpid = wait(&status)) > 0);
   }
+  //print out ending information
   sprintf(buff, "   ### Q-PROC(%d): section a[%d..%d] sorted", cpid,
 	  atoi(argv[1]), atoi(argv[2]));
   length = strlen(buff);

@@ -12,8 +12,24 @@
 /* PROGRAM ASSIGNMENT 2                                                      */
 /* FILE NAME: main.c                                                         */
 /* PROGRAM PURPOSE: To take in unsorted arrays and sort them concurrently    */
+/* using qsort and to take in two presorted arrays and merge them            */
+/* concurrently with merge sort                                              */
+/*                                                                           */
+/*                                                                           */
+/*                                                                           */
 /*---------------------------------------------------------------------------*/
 
+
+/* ----------------------------------------------------------- */
+/* FUNCTION fillArray                                          */
+/* Purpose: To fill the arguments given from the command line  */
+/* PARAMETER USAGE :                                           */
+/* int arr[]: The array that will be filled and later use for  */
+/* the shared memory segments                                  */
+/* int size: The size of the array                             */
+/* FUNCTION CALLED :                                           */
+/* malloc, scanf                                               */
+/* ----------------------------------------------------------- */
 void fillArray(int *arr[], int size) {
   *arr = (int*) malloc((size) * sizeof(int));
   for(int i = 0; i < size; i++) {
@@ -21,6 +37,20 @@ void fillArray(int *arr[], int size) {
   }
 }
 
+/* ----------------------------------------------------------- */
+/* FUNCTION printArray                                         */
+/* Purpose: To print the array information to stdout for       */
+/* debugging purposes and assignment purposes                  */
+/* PARAMETER USAGE :                                           */
+/* int arr[]: The array that will be filled and later use for  */
+/* the shared memory segments                                  */
+/* int size: The size of the array                             */
+/* int isQsort: Determines if the call came for the qsort, if  */
+/* so, then it prints different statements                     */
+/* int isX: Determines if the print statement should be for X  */
+/* FUNCTION CALLED :                                           */
+/* printf                                                      */
+/* ----------------------------------------------------------- */
 void printArray(int arr[], int isQsort, int isX, int size) {
   if(isQsort) {
     printf("Input array for qsort has %d element:\n", size);
@@ -40,7 +70,17 @@ void printArray(int arr[], int isQsort, int isX, int size) {
   printf("\n\n");
 }
 
+/* ----------------------------------------------------------- */
+/* FUNCTION main                                               */
+/* Purpose: To drive the code                                  */
+/* PARAMETER USAGE :                                           */
+/*                                                             */
+/* FUNCTION CALLED :                                           */
+/* fillArray, printArray, malloc, shmget, etc                  */
+/* ----------------------------------------------------------- */
+
 int main() {
+  //Declare and fill all the variables
   int *a;
   int *x;
   int *y;
@@ -71,6 +111,7 @@ int main() {
   key_t keym;
   int *mPtr;
   
+  //Setting up the memory segments for everyone
   keyQsort = ftok("main.c", 'q');
   printf("*** MAIN: qsort shared memory key = %d\n", keyQsort);
   
@@ -127,9 +168,7 @@ int main() {
   printf("*** MAIN: merge output shared memory attached and ready to use\n\n");
   
   
-  //fillArray(qSortPtr);
-  //fillArray(xPtr);
-  //fillArray(yPtr);
+  //Filling the newly created memory segments
   for(int i = 0; i < sizeQ; i++) {
     qSortPtr[i] = a[i];
   }
@@ -142,6 +181,7 @@ int main() {
     yPtr[i] = y[i];
   }
   
+  //Printing the data to make sure it is all good
   printArray(qSortPtr, 1, 0, sizeQ);
   printArray(xPtr, 0, 1, sizeX);
   printArray(yPtr, 0, 0, sizeY);
@@ -149,6 +189,7 @@ int main() {
   printf("*** MAIN: about to spawn the process for qsort\n");
   printf("*** MAIN: about to spawn the process for merge\n");
   
+  //pids for calling children
   pid_t wpid;
   pid_t cpid = fork();
   if(cpid < 0) {
@@ -156,7 +197,7 @@ int main() {
     return 0;
   }
  
-  //qsort
+  //qsort initializing
   if(cpid == 0) {
     char *argv[6];
     for(int i = 0; i < 6; i++) {
@@ -173,7 +214,7 @@ int main() {
   }
   
 
-  //merge
+  //merge initializing
   cpid = fork();
 
   if(cpid < 0) {
@@ -198,8 +239,10 @@ int main() {
   }
 
   int status = 0;
+  //wait until all children are dead
   while((wpid = wait(&status)) > 0);
 
+  //Print the sorted arrays
   printf("*** MAIN: sorted array by qsort:\n   ");
   for(int i = 0; i < sizeQ; i++) {
     printf("%d ", qSortPtr[i]);
@@ -212,6 +255,7 @@ int main() {
   }
   printf("\n\n");
   
+  //disconnect memory segments
   shmdt(qSortPtr);
   printf("*** MAIN: qsort shared memory successfully detached\n");
   shmctl(ShmIDQSort, IPC_RMID, NULL);
