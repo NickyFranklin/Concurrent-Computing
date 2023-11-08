@@ -1,0 +1,76 @@
+Name: Nicky Franklin
+Due date: 10/4/23
+username: nafrankl
+assignment 2
+late slips: 5
+
+1. What is the logic of the program?
+	The question isn't very specific but I will try my best to answer it. 
+	I will be describing how I made the program. My first goal was to read 
+	in all the information from the command line and then initialize everything
+	I needed to with the information. This included taking all the array data 
+	and filling the arrays. Once I had that info and printed out what I needed,
+	I went ahead and created the shared memory segments and then created the 
+	print statements and the destruction statements immediately. I then tested 
+	it to be sure it worked. I then made the qsort and merge files and filled 
+	them with test print statements and then called execvp in main. After 
+	verifying that those two worked, I went ahead and created two child 
+	processes to call them in main. 
+	I then went ahead and worked on qsort. With qsort, I made the sort like 
+	you would if it was just recursive and tried doing it that way. Once I 
+	confirmed my implementation was correct, I edited it so that it called
+	exec instead of itself. After I confirmed all this was working, I made
+	the print statements for it.
+	Then I worked on merge. I started by getting all the data in and
+	determining the equations needed for determining indices. After I started
+	getting acceptable answers from them, I programmed them into the program
+	and then created all the child processes I needed. I then have each one
+	take one number and determine its position. I didn't have exit statements
+	originally so this made every child try to calculate everything but I 
+	fixed it. I then added in the print statements.
+	I used sprintf and write statements everywhere as to avoid concurrency 
+	issues since I believe write is atomic.
+	
+2. Why does my program work?
+	It works because none of the child processes actually touch data that
+	another child will need to use. Since there are no worries about data 
+	being moved around, the program will do the correct sorting no matter 
+	what (assuming the rest of my logic is correct). If two processes did 
+	need to look at the same data any time, the program wouldn't work
+	
+3. Explain the allocation and use of each shared memory segment
+	The memory segments are all allocated based on how much data the array 
+	needs. For q sort, it is the size that is read in. For merge, it is the 
+	size of x, y, and then both combined. What I do it generate a special 
+	key for each segment and then put in the keys and the space I want.
+	I then fill those arrays with the array data except for the final merge 
+	array. I then send the ID to each child program so that they can edit it. 
+	The children then just treat the memory segment like it is a normal array 
+	and main looks at the segments at the end. The final merge is edited 
+	only in the merge file where the program dynamically adds the values to it.
+
+4. Are there potential race conditions?
+	No, In merge, all the child processes read from an array that never gets 
+	written to and write to a specific spot that only they will write to. 
+	In qsort, the child processes dont get created until after the array is 
+	edited and then that part of the array doesn't matter anymore and the 
+	children don't affect eachother either. Since they never write to 
+	eachother's arrays or read from them, there is no issue.
+	
+5. How do you construct an argument list that is passed from program main to 
+program qsort?
+	Of course the first argument is the command name which is fairly easy 
+	to set since it won't change. I then send in the low index and the high 
+	index into arguments 1 and 2 respectively. These allow the program so 
+	know where it should print and what values to manipulate. I then send the 
+	shared memory id so it has access to the space and also the size of the 
+	array so it knows when to stop using it. 
+	The final argument is NULL as that is how you are supposed to do it.
+
+6. How do you construct an argument list that is passed from program main to 
+program merge?
+	The first argument is the command name. The second and third arguments 
+	are the ids for the shared memory segments for x and y respectively so 
+	that they can access the arrays. The next two are the sizes for the two 
+	arrays in the same order. Finally we send the final merge array id as 
+	well for the sorted array.

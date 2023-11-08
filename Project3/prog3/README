@@ -1,0 +1,83 @@
+Name: Nicky Franklin       UserId: nafrankl
+Due Date: 10/16/23
+Late Passes Used: 0
+Late Passes Remaining: 5
+
+Question 1:
+There are no race conditions in this prefix sum computation. This is because 
+each row is calculated one at a time meaning that the previous row will
+no longer be updated and that the data is safe to touch with the current row.
+Only one thread writes any particular piece of data as well so there are no
+race conditions there as well. 
+The main program is also told to wait for all the threads to finish before
+moving onto a new row, so those new threads can't touch data that is already
+being operated on.
+
+Question 2:
+No, this would create race conditions where one thread may not end before
+another thread starts that uses the value at x[i]. This would cause the sum
+of that index to be wrong and likely throw off the rest of the calculations
+to be made. It is wiser to have the alternative array that is read to and 
+written to.
+
+Question 3:
+Yes, you do not have to use the 2d array as well as create the threads each 
+time. My solution to this is to have an array of size n+1. This array will
+essentially be a boolean array where each value of the array starts off as
+0. The threads will go through a cycle like normal but when
+they get the new value for which they want to write to x, they will first check
+the boolean array. If the boolean array is all 1's except for the thread's
+section, then the thread will set its boolean to 1 and the n+1 boolean to 1
+and write the value to x[i],
+otherwise the thread will wait until it sees that the final boolean is
+1. They will then write their respective elements to their respective parts in
+x and then wait again until they see all the booleans are flipped back to 0 to
+start again. After the final boolean is set back to 0, they will run another
+iteration. They will then do this K times. 
+This is correct because it follows the algorithm given to us for this
+assignment meaning that the math is correct. It also guarantees that no
+critical section is written to until all the work of an iteration is done.
+Due to the last boolean not belonging to any thread unless it is the last 
+thread to finish, that means that no thread will get caught up by looking 
+at a boolean that changed prematurely and just not going and causing data
+errors. Since none of the threads rely on other data that can be written
+to during these times, no data errors can occur and the extra boolean 
+ensures deadlock can not happen either.
+
+Question 4:
+We know that to compute the prefix sum of an array, each index of the array is
+the previous indexes value + the current indexes value.
+I.e. y[0] = x[0], y[1] = y[0] + x[1], y[2] = y[1] + x[2], ... 
+,y[n-1] = y[n-2] + x[n-1]
+To verify that the algorithm used in the program calculates the same answers,
+we will use a base case of n = 1 and verify that, that gives us the correct
+answer. We will then assume that it will work k times and then prove it will
+work k+1 times.
+n = 1 = k
+e = 1
+i = n - 1
+for(int i = 1, int e = 1; i <= k; i++, e *= 2) {
+	for(int j = 0; j < n - 1; j++) {
+		if(j - e < 0)
+			x[j] = x[j];
+		else
+			x[i] += x[j-e]
+	}
+}
+
+Putting n through this:
+j < n - 1 = j < 0 = 0 < 0:
+The for loop stops running and x[i] is fine since the array of one element is
+already good for completing the property.
+
+We can assume that for k times, the result will be good. Now we need to prove 
+that the same is for k + 1 times.
+x[i] += x[k-2^i]
+We know that x[i] is correct due to the base case being correct and we can 
+assume x[k] is correct, we need to prove that x[k+1] is correct.
+
+x[i+1] = x[i] + x[k-2^i] + x[i+1] +x[(k+1)-2^i+1]
+x[k-2^i] + x[i] is what x[i+1] is so we can simplify to this
+x[i+1] = x[i+1] + x[k+1 - 2^i+1]
+x[i] = x[i] + x[k-2^i]
+Thus this has been proven correct

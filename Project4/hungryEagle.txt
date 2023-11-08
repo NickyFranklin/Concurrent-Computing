@@ -1,0 +1,76 @@
+Hungry Eagles Problem
+m Feeding Pots
+n Baby Eagles
+t number of feedings
+0 < m <= n
+m eagles can eat at any given point
+
+Feeding pots are empty at beginning and mother is sleeping
+
+After a baby eagle feeds, the pot is empty
+
+If there are no feeding pots, the first baby eagle must wake the mother up
+The mother will then hunt and fill all the feeding pots
+
+Only one baby eagle can wake the mother
+
+If all filled pots are being eaten and the rest are empty, the babies wait to wake mother
+
+After the t-th cycle, they get fucking yeeted
+
+Semaphores Needed:
+babySem
+mutex
+potsEmpty
+momSem
+momBack
+Mutex2
+
+ready_to_eat()
+	wait Mutex
+	if(food available)
+		food--
+		if(food == 0)
+			food available = no
+		numberEating++;
+		signal mutex
+	else
+		wait potsEmpty
+		wait momSleeping
+		signal mom
+		wait momBack
+		food available = yes
+		food--
+		signal mutex
+	return
+	
+finish_eating()
+	wait Mutex2
+	if(number eating > 1)
+		number eating--
+		signal mutex 2
+	else
+		number eating--
+		signal potsEmpty
+		signal mutex2
+		
+goto_sleep()
+	signal momSleeping
+	wait mom
+	retire()
+	if(isRetired == true)
+		gameOver
+
+food_ready()
+	food = m
+	signal momBack
+	
+
+
+
+
+
+
+
+
+
