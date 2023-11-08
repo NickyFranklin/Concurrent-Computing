@@ -12,10 +12,9 @@
 //----------------------------------------------------
 class Baby : public Thread {
  public:
-  Baby();
+  void setStart(int n);
   void ready_to_eat();
   void finish_eating();
-  ~Baby();
   int numberEagle;
   int numberPot;
 
@@ -26,10 +25,9 @@ class Baby : public Thread {
 
 class Mother : public Thread {
  public:
-  Mother();
+  Mother(int m, int n, int t);
   void goto_sleep();
   void food_ready();
-  ~Mother();
   int m;
   int n;
   int t;

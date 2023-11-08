@@ -16,100 +16,46 @@
 //-------------------------------------------------------------
 
 using namespace std;
-int **B;
+Semaphore potsEmpty("potsEmpty", 1);
+Semaphore momSleeping("momSleeping", 0);
+Semaphore momBack("momBack", 0);
+Semaphore mom("mom", 0);
+Semaphore mutex3("mutex3", 1);
+int food;
+int numberEating;
+bool foodAvailable;
 
-//--------------------------------------------------------------------------------------
-//Function main:
-//   Calculate the prefix sum of an array concurrently
-//Parameter Usage:
-//char buf: Used to write strings to stdout during concurrent parts of the code
-//int n: Size of the array taken in
-//int *x: The array of numbers that are taken in
-//int a: Hold the value of log base2(n)
-//int temp: holds the value of n to be divided by two while calculating log base2(n)
-//int b: the number of rows of B
-//int k: the number of rows
-//PreFix prefix[n]: The number of threads to be created each run
-//int ** B: The array that holds all the prefix sum steps
-//Functions Called:
-//setPreFix
-//Join
-//Begin
-//----------------------------------------------------------------------------------------
-
-int main(void) {
+int main(int argc, char **argv) {
   //Declare variables and set them
-  char buf[1000];
-  int n;
-  int *x;
-  cin >> n;
-  cout << "Number of input data = " << n << endl;
-  
-  x = new int[n];
-
-  cout << "Input Array:" << endl;
-  for(int i = 0; i < n; i++) {
-    cin >> x[i];
-    cout << x[i] << "   ";
-  }
-  cout << endl;
-
-  //Calculate log base 2 of size
-  int a = 0;
-  int temp = n;
-  while(temp != 1) {
-    temp /= 2;
-    a++;
-  }
-  int b = a;
-
-  //Allocate memory for B
-  B = new int*[b+1];
-  for(int i = 0; i < b+1; i++) {
-    B[i] = new int[n];
-  }
-
-  //Set the first row of B to the original array
-  for(int i = 0; i < n; i++) {
-    B[0][i] = x[i];
+  if(argc < 4) {
+    cout << "./prog4 m n t" << endl;
   }
   
-  //Set up all the prefix sum objects for each thread
-  PreFix prefix[n];
-  for(int k = 0; k < n; k++) {
-     prefix[k].setPreFix(n, x, 1, k);
+  int m = argv[1];
+  int n = argv[2];
+  int t = argv[3];
+
+  Baby babies[20];
+  
+  for(int i = 0; i < n; i++) {
+    babies[i].setStart(i);
   }
 
-  //Get number of rows
-  int k = prefix[0].k;
+  Mother mother(m, n, t);
 
-  //Create N threads per row and calculate the prefix sum
-  for(int i = 1; i <= k; i++) {
-    cout << "Run " << i << ":" << endl;
-    for(int j = 0; j < n; j++) {
-      prefix[j].Begin();
-      sprintf(buf, "      Thread %d Created\n", j);
-      write(1, buf, strlen(buf));
+  food = 0;
+  numberEating = 0;
+  foodAvailable = false;
+  
+  for(int i = 0; i < n; i++) {
+    if(i == 0) {
+      mother.begin();
     }
-    
-    for(int j = 0; j < n; j++) {
-      prefix[j].Join();
-    }
+    babies[i].begin();
+  }
+  
+  while(!(mother.isRetired)) {
 
-    cout << "Result after run " << i << ":" << endl;
-    for(int p = 0; p < n; p++) {
-      cout << B[i][p] << " ";
-    }
-    cout << endl;
-    
-    if(i == k) {
-      cout << endl;
-      cout << "Final result after run " << i << ":" << endl;
-      for(int p = 0; p < n; p++) {
-	cout << B[i][p] << " ";
-      }
-      cout << endl;
-    }
   }
   
   Exit();

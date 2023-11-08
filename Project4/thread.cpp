@@ -37,7 +37,7 @@ extern int potsFilled;
 //Function Called:
 //ThreadFunc()
 //-----------------------------------------------------------------------------
-Baby::Baby(int n) {
+void Baby::setStart(int n) {
   this.numberEagle = n;
   this.numberPot = -1;
 }
