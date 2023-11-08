@@ -40,6 +40,10 @@ extern int potsFilled;
 void Baby::setStart(int n) {
   this.numberEagle = n;
   this.numberPot = -1;
+  for(int i = 0; i < n; i++) {
+    buf2[i] = ' ';
+    buf2[i+1] = '\0';
+  }
 }
 
 Mother::Mother(int m, int n, int t) {

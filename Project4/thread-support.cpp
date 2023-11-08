@@ -22,6 +22,10 @@ extern bool foodAvailable;
 
 void Baby::ready_to_eat() {
   //Since we are editing commonly shared attributes, these must all be edited one at a time
+ 
+  sprintf(buf, "%sBaby eagle %d is ready to eat\n", buf2, numberEagle);
+  write(1, buf, strlen(buf));
+
   mutex3.wait();
   //If there is food, then eat
   if(food > 0) {
@@ -39,12 +43,15 @@ void Baby::ready_to_eat() {
     //mom is not sleeping yet, then wait
     momSleeping.wait();
 
+    sprintf(buf, "%sBaby eagle %d sees all feeding pots are empty and wakes up the mother\n",
+	    buf2, numberEagle);
+    write(1, buf, strlen(buf));
     //Wake mom up
     mom.signal();
-
+    
     //Wait for mom to bring back food
     momBack.wait();
-
+    
     //Make food available again
     food--;
     
@@ -58,6 +65,8 @@ void Baby::ready_to_eat() {
 }
 
 void Baby::finish_eating() {
+  sprintf(buf, "%sBaby eagle %d finishes eating\n", buf2, numberEagle);
+  write(1, buf, strlen(buf));
   mutex3.wait();
   numberEating--;
   if(numberEating == 0 && food == 0) {

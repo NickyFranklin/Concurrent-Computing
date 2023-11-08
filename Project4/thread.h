@@ -17,6 +17,8 @@ class Baby : public Thread {
   void finish_eating();
   int numberEagle;
   int numberPot;
+  char buf[1000];
+  char buf2[21];
 
  private:
   void ThreadFunc();
@@ -28,6 +30,7 @@ class Mother : public Thread {
   Mother(int m, int n, int t);
   void goto_sleep();
   void food_ready();
+  char buf[1000];
   int m;
   int n;
   int t;
