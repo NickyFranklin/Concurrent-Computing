@@ -19,6 +19,7 @@ extern Semaphore mutex3;
 extern int food;
 extern int numberEating;
 extern bool foodAvailable;
+extern int babyWaker;
 
 void Baby::ready_to_eat() {
   //Since we are editing commonly shared attributes, these must all be edited one at a time
@@ -42,10 +43,12 @@ void Baby::ready_to_eat() {
     
     //mom is not sleeping yet, then wait
     momSleeping.wait();
-
+    
     sprintf(buf, "%sBaby eagle %d sees all feeding pots are empty and wakes up the mother\n",
 	    buf2, numberEagle);
     write(1, buf, strlen(buf));
+    babyWaker = numberEagle;
+    
     //Wake mom up
     mom.signal();
     
@@ -78,15 +81,20 @@ void Baby::finish_eating() {
 void Mother::goto_sleep() {
   momSleeping.signal();
   mom.wait();
+  sprintf(buf, "Mother Eagles is awoke by baby eagle %d and starts preparing food.", babyWaker);
+  write(1, buf, strlen(buf));
   //May change where these go
   numbersFed++;
   retire();
   if(isRetired) {
+    sprintf(buf, "Mother Eagle retires after %d feedings. Game is over!!!!", numbersFed);
+    write(1, buf, strlen(buf));
     return;
   }
 }
 
 void Mother::food_ready() {
+  sprintf(buf, "Mother eagle says \"Feeding (%d)\"", numbersFed);
   food = this.m;
   momBack.signal();
 }

@@ -24,6 +24,7 @@ Semaphore mutex3("mutex3", 1);
 int food;
 int numberEating;
 bool foodAvailable;
+int babyWaker;
 
 int main(int argc, char **argv) {
   //Declare variables and set them

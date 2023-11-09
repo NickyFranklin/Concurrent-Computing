@@ -26,9 +26,15 @@
 
 using namespace std;
 
-extern Semaphore babySem;
-extern Semaphore motherSem;
-extern int potsFilled;
+extern Semaphore potsEmpty;
+extern Semaphore momSleeping;
+extern Semaphore momBack;
+extern Semaphore mom;
+extern Semaphore mutex3;
+extern int food;
+extern int numberEating;
+extern bool foodAvailable;
+extern int babyWaker;
 
 //--------------------------------------------------------------------------------
 //Function ThreadFunc()
