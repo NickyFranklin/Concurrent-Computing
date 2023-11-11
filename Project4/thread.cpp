@@ -13,12 +13,11 @@
 
 //--------------------------------------------------------------
 //Name: Nicky Franklin          User Id: nafrankl
-//Due Date: 10/16/23
-//Program Assignment 3
+//Due Date: 11/8/23
+//Program Assignment 4
 //File Name: thread.cpp
 //Program Purpose:
-//Define the class functions that are to be used to calculate
-//The prefix sum
+//Define the class functions that are to be used to do the baby and mother eagle programs
 //----------------------------------------------------------------
 
 
@@ -31,35 +30,60 @@ extern Semaphore momSleeping;
 extern Semaphore momBack;
 extern Semaphore mom;
 extern Semaphore mutex3;
+extern Semaphore potsAllowed;
 extern int food;
 extern int numberEating;
 extern bool foodAvailable;
 extern int babyWaker;
+extern int numberFeedings;
 
 //--------------------------------------------------------------------------------
-//Function ThreadFunc()
-//This function calculates the prefix sum of a certain index using threads
-//Parameter Usage: N/A
+//Function setStart(int n, int m, int t)
+//This function sets up the baby eagles
+//Parameter Usage:
+//  n: number eagles
+//  m: number feeding pots
+//  t: number feedings
 //Function Called:
-//ThreadFunc()
+//  n/a
 //-----------------------------------------------------------------------------
-void Baby::setStart(int n) {
-  this.numberEagle = n;
-  this.numberPot = -1;
-  for(int i = 0; i < n; i++) {
+void Baby::setStart(int n, int m, int t) {
+  this->numberEagle = n;
+  this->m = m;
+  this->t = t;
+  this->numberPot = -1;
+  for(int i = 0; i < n+1; i++) {
     buf2[i] = ' ';
     buf2[i+1] = '\0';
   }
 }
 
+//--------------------------------------------------------------------------------
+//Function Mother(int m, int n, int t)
+//This function sets up the mother eagle
+//Parameter Usage:
+//  n: number eagles
+//  m: number feeding pots
+//  t: number feedings
+//Function Called:
+//  n/a
+//-----------------------------------------------------------------------------
 Mother::Mother(int m, int n, int t) {
-  this.m = m;
-  this.n = n;
-  this.t = t;
-  this.numbersFed = 0;
-  this.isRetired = false;
+  this->m = m;
+  this->n = n;
+  this->t = t;
+  this->numbersFed = 0;
+  this->isRetired = false;
 }
 
+//--------------------------------------------------------------------------------
+//Function threadFunc()
+//This function sets up the driver code for the baby threads
+//Parameter Usage:
+//  n/a
+//Function Called:
+//  n/a
+//-----------------------------------------------------------------------------
 void Baby::ThreadFunc() {
   Thread::ThreadFunc();
   while(1) {
@@ -71,6 +95,14 @@ void Baby::ThreadFunc() {
   Exit();
 }
 
+//--------------------------------------------------------------------------------
+//Function threadFunc()
+//This function sets up the driver code for the mother thread
+//Parameter Usage:
+//  n/a
+//Function Called:
+//  n/a
+//-----------------------------------------------------------------------------
 void Mother::ThreadFunc() {
   Thread::ThreadFunc();
   while(!isRetired) {

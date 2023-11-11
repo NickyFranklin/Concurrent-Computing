@@ -1,7 +1,78 @@
 Name: Nicky Franklin       UserId: nafrankl
 Due Date: 11/8/23
-Late Passes Used: 0
-Late Passes Remaining: 5
+Late Passes Used: 1
+Late Passes Remaining: 4
 
 Question 1:
+	There can only ever be m eagles eating at any given time due to the 
+	potsAllowed and mutex3 semaphores as well as the food variable. The
+	potsAllowed semaphore is initialized to value m to only allow m eagles
+	in. There is also mutex3 that will only allow 1 baby in the critical
+	section at once which doesn't allow accidental variable mixing to happen.
+	There is also the food variable that will stop any birds that would get
+	through and tell the program. Since potsAllowed only ever allow m eagles to
+	eat at any time, only m eagles can eat. potsAllowed only gets upped once
+	more when the last bird is done eating
+  
+Question 2:
+	The potsAllowed semaphore only ever allows m eagles through into the
+	section of the code where the birds eat. Since the bird can't get past
+	the semaphore until the last bird is done eating and all the food is gone,
+	he will end up having to ask mom for food which uses another semaphore is
+	force the bird to wait until mom has come back with food. Then and only
+	then will the bird be able to eat.
+	
+Question 3:
+	The potsAllowed semaphore only allows m birds through meaning there will
+	always be enough feeding pots when a bird is let through. Since there are
+	m pots and m birds let through, then the baby bird is able to eat.
+	
+Question 4:
+	The potsAllowed semaphore only allows m birds through meaning there are
+	always enough feeding pots. Feeding pots are assigned sequentially based
+	on the amount of food left and since the mutex3 only allows one bird to act
+	at a time, it will be assigned a full food pot
+	
+Question 5:
+	The potsAllowed semaphore only allows m birds through meaning there are always enough feeding pots. Feeding pots are assigned sequentially based on the amount of food left and since the mutex3 only allows one bird to act at a time, it will be assigned a full food pot that is not being used.
 
+Question 6:
+	Since there is a mutex for the birds waiting to eat, only one bird can
+	discover there is no food and that bird will then wait for the food to
+	be filled before it releases the mutex meaning there is only one bird in
+	the code that can call the mom at any specific time
+	
+Question 7:
+	The mother has a momSleeping semaphore that she waits on to be activated
+	until a baby bird signals it to be fed. Since the mother will always be 
+	blocked until a baby tells her to get food, she will only go when a baby 
+	wakes her up
+	
+Question 8:
+	The baby that wakes the mom up is in a mutex that blocks all other babies
+	from entering that block of code. There is another semaphore that blocks
+	the baby in this code until the mom is done getting the food. Then the baby
+	can go and eat food and finally releases the mutex. There is also another
+	semaphore that is blocking until the mom goes to sleep and signals for the
+	child to be able to go through.
+
+Question 9:
+	Due to the mutex, only the baby that called the mom can be running while
+	the mom is getting food and there is another semaphore blocking the baby 
+	until the mom gets back with the food and signals it. Since the mom doesn't
+	let the baby go and release the mutex until the pots are filled, no baby 
+	eagles can run and thus eat.
+	
+Question 10:
+	The mother releases the baby in the mutex after the pots are done, the
+	baby then releases the mutex to allow more babies to eat. The mother 
+	then goes back to sleep and waits on a semaphore until the food is gone
+	again and she is called to action once more.
+	
+Question 11:
+	There is a retire function in the mom that checks to see if the required
+	number of feeding have been met. There is an if statement that checks if
+	the number of feedings is greater than the max number of feedings. If it
+	is greater, then it flips the retire flag and the program stops. This part
+	of the program only runs when the mother runs so it can only happen after
+	the t'th feeding.
